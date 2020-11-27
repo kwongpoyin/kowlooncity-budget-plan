@@ -18,13 +18,16 @@ const insertRecord = () => {
   //const district = $("#district").val();
   const subdistrict = $("#subdistrict").val();
   const suggestion = $("#suggestion").val();
+  const suggestion2 = $("#suggestion2").val();
   const ageGroup = parseInt($("#ageGroup").val());
   console.log(firebase);
   const db = firebase.firestore();
   const record = {
     subdistrict: subdistrict,
     suggestion: suggestion,
-    ageGroup: ageGroup
+    ageGroup: ageGroup,
+    suggestion2: suggestion2,
+    created: new Date().toISOString()
   };
 
   budget.seriesData.forEach(l => {
@@ -58,7 +61,7 @@ const updateOption = (selectId) => {
 };
 
 const updateUIWithBudget = (left) => {
-  const usedUp = left  <= 0.0;
+  const usedUp = left  <= 10.0;
   console.log("used", usedUp, budget.currentLeft());
   $("#submit").prop("onclick", null).off("click");
   if (usedUp) {
