@@ -1,0 +1,626 @@
+<html>
+  <head>
+    <title>九龍城區議會撥款修改器</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.1.1/firebase-firestore.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+    <script>
+      var firebaseConfig = {
+          apiKey: "AIzaSyC4Mv7Yo4b4FDYyB2T19dr9uqJywr21ilM",
+          authDomain: "kowlooncitybudget.firebaseapp.com",
+          databaseURL: "https://kowlooncitybudget.firebaseio.com",
+          projectId: "kowlooncitybudget",
+          storageBucket: "kowlooncitybudget.appspot.com",
+          messagingSenderId: "1025670764541",
+          appId: "1:1025670764541:web:ccde5ccf7a8748ecfb2b94",
+          measurementId: "G-FF1QL3GXQC"
+        };
+        // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      firebase.analytics();
+    </script>
+    <style>
+      .btn-text b{display:inline}
+      .btn-text:not(.collapsed)  span{display:none}
+      .btn-text.collapsed b {display:none}
+      .banner2 {
+      color: white;
+      background-color: #444444;
+      padding-left: 1.5em;
+      padding-bottom: 0.25em;
+      }
+      .nav-tabs .nav-item .nav-link.active {
+      background-color: #FCE21E;
+      color: #444444;
+      font-weight: bold;
+      }
+      .nav-tabs .nav-item .nav-link {
+      color: black;
+      }
+      .status {
+      padding-top:0.5em;
+      }
+      .guide {
+      margin-bottom: 0.5em;
+      text-decoration: underline;
+      }
+      .header {
+      font-weight: bold;
+      }
+      .banner {
+      padding: 1em;
+      color: #444444;
+      background-color: #FCE21E;
+      padding-left:1.5em;
+      margin-bottom: 0.0em;
+      }
+      .description-container {
+      display: none;
+      }
+      @media (max-width: 768px) {
+      .float-right-sm {
+      float: right;
+      }
+      }
+      .pct {
+      margin-left: 0.5em;
+      }
+      .amt {
+      margin-lefT: 0.5em;
+      }
+      .hide-me[aria-expanded="true"] {display: none;}
+      .row {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      width: 100%;
+      }
+      .column {
+      display: flex;
+      flex-direction: column;
+      flex-basis: 100%;
+      flex: 2;
+      }
+      .tab-content {
+      width: 100%;
+      }
+      .submit {
+      color: white;
+      font-weight: bold;
+      background-color: #FE710E;
+      }
+      .input-range {
+      width: 90%;
+      }
+      .tab-container {
+      width: 100%;
+      }
+      .tab-container >div {
+      flex-grow: 1;
+      width: 100%;
+      margin-top:.5em;
+      padding-right: .5em;
+      padding-bottom:1.5em;
+      padding-top:0.5em;
+      border-bottom:1px solid #CCCCCC;
+      }
+      .tab-pane {
+      padding-left:2em;
+      }
+      #container {
+      min-width: 400px;
+      min-height: 400px;
+      width: 50vw;
+      height: 50vw;
+      }
+      #container::after {
+      content: "";
+      background: url(https://upload.wikimedia.org/wikipedia/zh/thumb/e/eb/Kowloon_City_District_logo.svg/1024px-Kowloon_City_District_logo.svg.png);
+      opacity: 0.5;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      position: absolute;
+      z-index: -1;   
+      background-size:     cover;
+      content: "";
+      display: block;
+      padding-bottom: 100%;
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/4.8.0/echarts.min.js" integrity="sha512-OvWfXEXFlgwaMYESoKZRrPGq9Ndjcf7pMgp+NjbUNeqEA1OOOUbLgquJGOzvh7H78qinNObGwRiFIj22es61Eg==" crossorigin="anonymous"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+  </head>
+  <body>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">確認提交</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            你居住的選區 : 
+            <select class="form-control form-control-lg" id="subdistrict">
+              <option value="非九龍城區居民">非九龍城區居民</option>
+              <option value="啟德北">啟德北</option>
+              <option value="啟德東">啟德東</option>
+              <option value="啟德中及南">啟德中及南</option>
+              <option value="宋皇臺">宋皇臺</option>
+              <option value="馬坑涌">馬坑涌</option>
+              <option value="馬頭角">馬頭角</option>
+              <option value="龍城">龍城</option>
+              <option value="太子">太子</option>
+              <option value="九龍塘">九龍塘</option>
+              <option value="龍城">龍城</option>
+              <option value="黃埔東">黃埔東</option>
+              <option value="鶴園海逸">鶴園海逸</option>
+              <option value="黃埔西">黃埔西</option>
+              <option value="紅磡灣">紅磡灣</option>
+              <option value="紅磡">紅磡</option>
+              <option value="何文田">何文田</option>
+              <option value="嘉道理">嘉道理</option>
+              <option value="土瓜灣北">土瓜灣北</option>
+              <option value="土瓜灣南">土瓜灣南</option>
+              <option value="家維">家維</option>
+              <option value="愛民">愛民</option>
+              <option value="愛俊">愛俊</option>
+              <option value="海心">海心</option>
+              <option value="樂民">樂民</option>
+              <option value="常樂">常樂</option>
+            </select>
+            你的年齡層 :
+            <select class="form-control form-control-lg"  id="ageGroup">
+              <option value="1">15或以下</option>
+              <option value="2">16-29</option>
+              <option value="3">30-44</option>
+              <option value="4">45-59</option>
+              <option value="5">60-74</option>
+              <option value="6">75或以上</option>
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+            <button type="button" class="btn btn-primary" id="confirmSubmit">提交</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="afterSubmit" tabindex="-1" role="dialog" aria-labelledby="afterSubmitModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="notUsedUpModalLabel">謝謝 ! 已收用了你的撥款意見 !</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">確定</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="error" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="notUsedUpModalLabel">系統故障…</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">確定</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="notUsedUp" tabindex="-1" role="dialog" aria-labelledby="notUsedUpModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="notUsedUpModalLabel">你還有未使用的撥款</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">確定</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="notChanged" tabindex="-1" role="dialog" aria-labelledby="notChangedModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="notUsedUpModalLabel">請更改撥款到心目中水平後按「提交」。</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">確定</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <nav class="banner">
+      <h1 class="header">九龍城區議會撥款修改器</h1>
+      使用方法: <span class="guide">更改撥款項目的百分比到心目中的水平，確保撥款全數分配後按「提交」。</span><br/>
+      <a href="https://www.districtcouncils.gov.hk/kc/doc/2020_2023/tc/dc_meetings_doc/18486/KCDC20_127cp.pdf" target="_blank">
+        九龍城區議會撥款最新財政狀況 (截至2020年11月11日為止的)
+      </a>
+    </nav>
+    <nav class="banner2">
+      <span>
+        <h5 class="status">原定總額: <span id="originaltotal">0</span> 元 剩下: <span id="budgetleft">0</span> 元
+          &nbsp;&nbsp;<button type="button" class="submit btn shadow-sm" id="submit">提交</button>
+        </h5>
+      </span>
+    </nav>
+    <div class="row">
+      <div id="container" class="column">
+      </div>
+      <div class="column">
+        <ul class="nav nav-tabs nav-pills" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" data-toggle="tab" href="#general">大會一般開支</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#committee">委員會預算</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#longterm">社區參與活動</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#committee2">九龍城區議會核下委員會</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#special">大會其他開支</a>
+          </li>
+        </ul>
+        <div class="tab-content">
+          <div id="general" class="container tab-pane active tab">
+            <br>
+            <div id="general_range" class="tab-container">
+            </div>
+          </div>
+          <div id="special" class="container tab-pane fade">
+            <br>
+            <div id="special_range" class="tab-container">
+            </div>
+          </div>
+          <div id="committee" class="container tab-pane fade">
+            <br>
+            <div id="committee_range" class="tab-container">
+            </div>
+          </div>
+          <div id="longterm" class="container tab-pane fade">
+            <br>
+            <div id="longterm_range" class="tab-container" style="word-break:break-all;">
+            </div>
+          </div>
+        <div id="committee2" class="container tab-pane fade">
+          <br>
+          <div id="committee2_range" class="tab-container">
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div class="description-container">
+      <div id="desc_長期合作伙伴計劃">
+        <br/><br/>
+        <span>
+          區議會預留部分撥款供某些團體(又稱「地區長期合作伙伴 」)舉辦社區參與計劃活動。過去地區長期合作伙伴之團體包括:  
+          <ol>
+            <li>九龍城區文娛促進會</li>
+            <li>九龍城區康樂體育促進有限公司</li>
+            <li>九龍城兒童合唱團</li>
+            <li>九龍城校長聯絡委員會</li>
+            <li>女童軍</li>
+            <li>建設健康九龍城協會有限公司</li>
+          </ol>
+          按「顯示過去活動」了解細節，並在下方的輸入對活動主題及方向的建議。 
+          <textarea id="suggestion" style="width:80%" rows="8"></textarea><br/><br/>
+          自2020年度起改善長期合作伙伴計劃, 除上述六個團體外,協助更多團體發展為九龍城區議會的地區長期合作伙伴,現稱為「主要地區團體」, 令名單更多元化及活動質素得以提高。 <br/>
+          <button type="button" data-toggle="collapse" data-target="#collapse_長期合作伙伴計劃" aria-expanded="false" aria-controls="collapse_長期合作伙伴計劃" class="btn-primary btn-text collapsed"><span class="show">顯示過去活動</span><b>隱藏過去活動</b></button>
+          <div id="collapse_長期合作伙伴計劃" class="collapse">
+            <ol>
+              <li>
+                建設健康九龍城協會有限公司：
+                <table class="table  table-bordered">
+                  <tr>
+                    <td>活動</td>
+                    <td>金額</td>
+                  </tr>
+                  <tr>
+                    <td>世界衞生日2019嘉年華會</td>
+                    <td>55,988元</td>
+                  </tr>
+                  <tr>
+                    <td>「愛老敬老」長者地區服務2018-2019</td>
+                    <td>48,682元</td>
+                  </tr>
+                  <tr>
+                    <td>九龍城屋宇維修諮詢大會</td>
+                    <td>26,410元</td>
+                  </tr>
+                </table>
+              </li>
+              <li>
+                九龍城區康樂體育促進有限公司：
+                <table class="table  table-bordered">
+                  <tr>
+                    <td>活動</td>
+                    <td>金額</td>
+                  </tr>
+                  <tr>
+                    <td>龍城康體盃</td>
+                    <td>210,793元</td>
+                  </tr>
+                  <tr>
+                    <td>龍城活力盃</td>
+                    <td>33,456元</td>
+                  </tr>
+                  <tr>
+                    <td>九龍城康體足球隊</td>
+                    <td>33,456元</td>
+                  </tr>
+                </table>
+              </li>
+              <li>
+                九龍城區文娛促進會：
+                <table class="table  table-bordered">
+                  <tr>
+                    <td>活動</td>
+                    <td>金額</td>
+                  </tr>
+                  <tr>
+                    <td>九龍城區國慶同樂日</td>
+                    <td>94,655元</td>
+                  </tr>
+                  <tr>
+                    <td>九龍城區書法比賽</td>
+                    <td>50,870元</td>
+                  </tr>
+                  <tr>
+                    <td>歲晚文藝欣賞會</td>
+                    <td>44,040元</td>
+                  </tr>
+                  <tr>
+                    <td>電影欣賞巡禮</td>
+                    <td>55,435元</td>
+                  </tr>
+                </table>
+              </li>
+              <li>
+                九龍城區兒童合唱團:
+                <table class="table  table-bordered">
+                  <tr>
+                    <td>活動</td>
+                    <td>金額</td>
+                  </tr>
+                  <tr>
+                    <td>第三屆九龍城區兒童故事演繹比賽</td>
+                    <td>94,655元</td>
+                  </tr>
+                  <tr>
+                    <td>第二屆九龍城區兒童才藝展演 </td>
+                    <td>44,990元</td>
+                  </tr>
+                  <tr>
+                    <td>歲第三十二屆九龍城區學校音樂匯演</td>
+                    <td>51,914元</td>
+                  </tr>
+                  <tr>
+                    <td>九龍城區兒童合唱團週音樂會2020</td>
+                    <td>45,700元</td>
+                  </tr>
+                </table>
+              </li>
+              <li>
+                九龍城區校長聯絡委員會:
+                <table class="table  table-bordered">
+                  <tr>
+                    <td>活動</td>
+                    <td>金額</td>
+                  </tr>
+                  <tr>
+                    <td>九龍城區傑出學生選舉</td>
+                    <td>50,000元</td>
+                  </tr>
+                  <tr>
+                    <td>九龍城區校長聯絡委員會周年研討會</td>
+                    <td>20,000元</td>
+                  </tr>
+                </table>
+              </li>
+            </ol>
+            <a href="https://www.districtcouncils.gov.hk/kc/doc/2016_2019/tc/committee_meetings_doc/CBSSC/15870/KCCBSSC19_11cp.pdf" target="_blank">九龍城社建會文件第11/19號</a>&nbsp;
+            <a href="https://www.districtcouncils.gov.hk/kc/doc/2016_2019/tc/committee_meetings_doc/CBSSC/15869/Pages_from_CBSSC_19_4.pdf" target="_blank">九龍城社建會文件第04/19號</a><br/>
+            <a href="https://www.districtcouncils.gov.hk/kc/doc/2016_2019/tc/committee_meetings_doc/CBSSC/15871/KCCBSSC19_15cp.pdf" target="_blank">九龍城社建會文件第15/19號</a>&nbsp;
+            <a href="https://www.districtcouncils.gov.hk/kc/doc/2016_2019/tc/committee_meetings_doc/CBSSC/16687/KCCBSSC19_01cp.pdf" target="_blank">九龍城社建會文件第01/19號</a><br/>
+        </span>
+        <br/>
+        </div>
+        <div id="desc_新春酒會">
+          <br/><br/>
+          邀請地區人士和居民(如大廈法團主席,物業管理負責人等) 及服務此區的政府部門及公營機構代表共聚聯歡 
+          <br/>
+        </div>
+        <div id="desc_文娛康樂及地區設施管理委員會">
+          <h5>2018年</h5>
+          參加第七屆全港運動會撥款康文署供九龍城區代表團備戰之用<br/>
+        </div>
+        <div id="desc_交通及運輸事務委員會">
+          <h5>2019年</h5>
+          九龍城區道路宣傳活動<br/>
+          <h5>2020年</h5>
+          九龍城區道路及單車安全宣傳活動<br/>
+          九龍城區公共交通需求研究<br/>
+        </div>
+        <div id="desc_房屋及基礎建設委員會">
+          <h5>2016-2017年</h5>
+          「印製及派發利是封」<br/>
+          九龍城區優質樓宇管理活動<br/>
+        </div>
+        <div id="desc_食物環境衞生事務委員會">
+          <br/><br/>
+          <span>
+            <button type="button" data-toggle="collapse" data-target="#collapse_食物環境衞生事務委員會" aria-expanded="false" aria-controls="collapse_食物環境衞生事務委員會" class="btn-primary btn-text collapsed"><span class="show">顯示過去活動</span><b>隱藏過去活動</b></button>
+            <div id="collapse_食物環境衞生事務委員會" class="collapse">
+              <h5>2019年</h5>
+              社區參與小區清潔活動計劃 - 建設健康九龍城協會 140,000 元<br/>
+              <a href="https://www.districtcouncils.gov.hk/kc/doc/2016_2019/tc/committee_meetings_doc/FEHC/15881/KCFEHC19_65cp.pdf" target="_blank">食物環境衞生事務委員會文件 第65/19號</a><br/><br/>
+              衞生環境齊創建 - 舉辦 一 次九龍城區地區衞生巡查，以及在九龍城 區內派發清潔包 及宣傳單張  140,000 元<br/>
+              <a href="https://www.districtcouncils.gov.hk/kc/doc/2016_2019/tc/committee_meetings_doc/FEHC/16943/KCFEHC19_35cp.pdf.pdf" target="_blank">九龍城食環會文件 35/19 號</a>
+              <br/><br/>
+              <h5>2020年</h5>
+              「2020/21 年度九龍城區小區鄰里清潔計劃 預算25 萬元<br/>
+              <a href="https://www.districtcouncils.gov.hk/kc/doc/2020_2023/tc/committee_meetings_doc/EHSDC/19509/KCEHSDC75_20cp.pdf" target="_blank">環境衞生及可持續發展委員會文件第75/20號</a><br/>
+              九龍城區公眾垃圾收集站環保改善研究 預算 378,645元<br/>
+              <a href="https://www.districtcouncils.gov.hk/kc/doc/2020_2023/tc/committee_meetings_doc/EHSDC/18497/KCEHSDC68_20cp.pdf" target="_blank">環境衞生及可持續發展委員會文件第68/20號</a><br/>
+            </div>
+          </span>
+          <br/>
+        </div>
+        <div id="desc_社區參與活動資助計劃">
+          <br/><br/>
+          供業委會、法團及區內志願／地區團體申辦活動，上限為二萬完
+        </div>
+        <div style="display:none">
+          <button type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample" class="btn-primary btn-text collapsed"><span class="show">顯示過去活動</span><b>隱藏過去活動</b></button>
+          <div class="collapse" id="collapseExample">
+            <h5>2019年 </h5>
+            <ul>
+              <li>九龍城區青少年 2019《回歸盃》足球錦標賽 約1000人12 萬 元</li>
+              <li>龍城迎回歸 22 周年嘉年華 約1000 人 30 萬 元</li>
+              <li>九龍城區「慶祝中華人民共和國成立七十周年」國慶晚宴：酒樓筵開約 100 席,並安排表演節目及抽獎環節 約 1,200 人 43 萬元 https://www.picuki.com/media/2136442840996375329</li>
+              <li>九龍城區賀國慶 70 周 年《龍情藝趣日》：粵劇表演兩 (下午、晚上共二場 ),《龍情藝趣》嘉年華, 約 6,000 人 60 萬 元</li>
+              <li>九龍城區節日燈飾120 萬 元</li>
+              <li>龍城元宵綵燈會 約 4,000 人 80 萬 元</li>
+              <li>龍城創藝墟 約 4,000 人 40 萬 元</li>
+              <li>多元藝術文化節目 約 3,000 人 55 萬 元</li>
+              <li>家庭童樂舉辦小型親子活動 約 500 人 20 萬 元</li>
+              <li>龍城遊藝園親子遊藝會  約 4,000 人 70 萬 元</li>
+              <li>龍城藝萃之都計劃：街畫繪製 40 萬 元 https://artinthemap.com/listings/terena/ </li>
+            </ul>
+            <h5>2020年</h5>
+            <a href="https://www.districtcouncils.gov.hk/kc/doc/2020_2023/tc/working_groups_doc/kcfestival/19072/kcfestival_2_20.pdf" target="_blank">九龍城區區節暨節慶活動工作小組活動建議</a>
+            原定多項活動或因疫情取消
+          </div>
+        </div>
+      </div>
+      <div id="desc_九龍城區地區推廣國民教育工作小組">
+        <button type="button" data-toggle="collapse" data-target="#collapse_九龍城區地區推廣國民教育工作小組" aria-expanded="false" aria-controls="collapse_九龍城區地區推廣國民教育工作小組" class="btn-primary btn-text collapsed"><span class="show">顯示過去活動</span><b>隱藏過去活動</b></button>
+        <div class="collapse" id="collapse_九龍城區地區推廣國民教育工作小組">
+          <h5>2019年</h5>
+          2019 龍城歷史導賞員培訓班：培訓區內高中學生成為“ 九龍城區歷史導賞青年大使 ” ，協助導賞員帶領導賞團 約40人70,000元;《舊日龍城》導賞遊 約450人$150,000
+          <br/>
+          <h5>2020年</h5>
+          2020 未有設立九龍城區地區推廣國民教育工作小組，由九龍城區公民教育運動統籌委員會申辦公民教育填色及繪畫比賽 85,500 <br/>
+          九龍城區歷史及文化專題 研習計劃— Part I: 桌遊設計比賽 Part II: 桌遊。龍情嘉年華<br/>
+          <a href="https://www.districtcouncils.gov.hk/kc/doc/2020_2023/tc/committee_meetings_doc/SSC/18517/KCSSC20_11_3.pdf">社會服務委員會文件第 11/20 號</a>
+        </div>
+      </div>
+      <div id="desc_國際復康日工作小組">
+        <button type="button" data-toggle="collapse" data-target="#collapse_國際復康日工作小組" aria-expanded="false" aria-controls="collapse_國際復康日工作小組" class="btn-primary btn-text collapsed"><span class="show">顯示過去活動</span><b>隱藏過去活動</b></button>
+        <div class="collapse" id="collapse_國際復康日工作小組">
+          <h5>2019年</h5>
+          2019國際復康日：殘疾人士免費乘搭車船日, 海洋公園同樂月, 中央慶祝典禮活動, 九龍城區國際復康日地區活動, 勞工及福利局撥出 53,000 元籌辦「九龍城區國際復康日地區活動」及「中央慶祝典活動」，九龍城區議會批出30,000 元用於籌辦「海洋公園同樂月 」 
+          <h5>2020年</h5>
+          2020因疫情未能召開小組故分發門票及餐券予全體議員向區內殘疾人士
+        </div>
+      </div>
+      <div id="desc_五個分區委員會">
+        <br/><br/>
+        <button type="button" data-toggle="collapse" data-target="#collapse_五個分區委員會" aria-expanded="false" aria-controls="collapse_五個分區委員會" class="btn-primary btn-text collapsed"><span class="show">顯示過去活動</span><b>隱藏過去活動</b></button>
+        <div class="collapse" id="collapse_五個分區委員會">
+          <h5>2019年</h5>
+          紅磡分區委員會：
+          <ul>
+            <li>慶祝中華人民共和國成立七十周年－參觀可觀天文館</li>
+            <li>慶祝中華人民共和國成立七十周年－紅磡分區關懷長者顯愛心探訪活動</li>
+            <li>慶祝中華人民共和國成立七十周年－粵劇欣賞會</li>
+          </ul>
+          龍塘分區委員會：
+          <ul>
+            <li>慶祝中華人民共和國成立七十周年－ 龍塘分區院舍探訪 65,000</li>
+          </ul>
+          土瓜灣分區委員會： 
+          <ul>
+            <li>慶祝中華人民共和國成立七十周年－土瓜灣分區探訪長者中心 10,093.</li>
+            <li>慶祝中華人民共和國成立七十周年－ 土瓜灣分區電影欣賞會 31,500 </li>
+            <li>慶祝中華人民共和國成立七十周年－土瓜灣分區粵劇欣賞會</li>
+          </ul>
+          何文田分區委員會： 
+          <ul>
+            <li>何文田分區賀國慶 70 周年聖誕同樂日 2019 105,000</li>
+            <li>四分區委員會印製 2020 年月曆</li>
+          </ul>
+          <h5>2020年</h5>
+          <ul>
+            <li>改位5個分區委員會：紅磡，土瓜灣，何文田，龍塘，啟德</li>
+            <li>申請低收入人士電影觀賞活動，院舍探訪活動</li>
+          </ul>
+        </div>
+      </div>
+      <div id="desc_美化地區藝術項目">
+        <button type="button" data-toggle="collapse" data-target="#collapse_美化地區藝術項目" aria-expanded="false" aria-controls="collapse_美化地區藝術項目" class="btn-primary btn-text collapsed"><span class="show">顯示過去活動</span><b>隱藏過去活動</b></button>
+        <div class="collapse" id="collapse_美化地區藝術項目">
+          2019 龍城藝萃之都計劃 街畫
+          <img src="pic1.png" style="width:100%"/>
+        </div>
+      </div>
+      <div id="desc_青年活動委員會">
+        Running Youth x 龍城 Got Talent！2020 340,000
+      </div>
+      <div id="desc_防火委員會">
+        <button type="button" data-toggle="collapse" data-target="#collapse_防火委員會" aria-expanded="false" aria-controls="collapse_防火委員會" class="btn-primary btn-text collapsed"><span class="show">顯示過去活動</span><b>隱藏過去活動</b></button>
+        <div class="collapse" id="collapse_防火委員會">
+          <h5>2019年</h5>
+          <ul>
+            <li>樓宇消防安全特使招募計劃及訓練課程 14,000 </li>
+            <li>消防安全教育計劃 48,000 </li>
+            <li>防火話劇遍校園 185,000</li>
+            <li>九龍城區防火教育運動系列 283,000 </li>
+          </ul>
+        </div>
+      </div>
+      <div id="desc_滅罪會">
+        <button type="button" data-toggle="collapse" data-target="#collapse_滅罪會" aria-expanded="false" aria-controls="collapse_滅罪會" class="btn-primary btn-text collapsed"><span class="show">顯示過去活動</span><b>隱藏過去活動</b></button>
+        <div class="collapse" id="collapse_滅罪會">
+          <h5>2019年</h5>
+          <ul>
+            <li>慶祝中華人民共和國成立七十周年《九龍城區中學生防罪標語創作比賽》13,000</li>
+            <li>慶祝中華人民共和國成立七十周年《九龍城區「 警民之友」暨「模範保安員」獎勵計劃》15,000</li>
+            <li>製作撲滅罪行宣傳品 32,000</li>
+            <li>製作和展示滅罪海報及橫額 10,000</li>
+            <li>九龍城區「 同心同行」友伴計劃 110,000 (由香港小童群益會青鋒網－社區支援服務計劃代表申請 )</li>
+          </ul>
+          <h5>2020年</h5>
+          暫未審批
+        </div>
+      </div>
+    </div>
+    <script src="./form.js"></script>
+    <script src="./circle.js"></script>
+    <footer class="section footer-classic context-dark bg-image" style="background: #2d3246;">
+      &nbsp;
+      &nbsp;
+      &nbsp;
+      &nbsp;
+    </footer>
+  </body>
+</html>
